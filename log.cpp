@@ -24,6 +24,101 @@ const char* LogLevel::ToString(LogLevel::Level level){
 	return "UNKNOW";
 }
 
+class MessageFormatItem : public LogFormatter::FormatItem{
+public:
+	MessageFormatItem(const std::string& str = ""){}
+	void format(std::ostream& os, Loggor::ptr loggor, LogLevel::Level level, LogEvent::ptr event) override{
+		os << event->getCOntent();
+	}
+};
+
+class LevelFormatItem : public LogFormatter::FormatItem{
+public:
+	LevelFormatItem(const std::string& str = ""){}
+	void format(std::ostream& os, Loggor::ptr loggor, LogLevel::Level level, LogEvent::ptr event) override{
+		os << LogLevel::ToString(level);
+	}
+};
+
+class ElasxpseFormatItem : public LogFormatter::FormatItem{
+public:
+	ElasxpseFormatItem(const std::string& str = ""){}
+	void format(std::ostream& os, Loggor::ptr loggor, LogLevel::Level level, LogEvent::ptr event) override{
+		os << event->getElapse();
+	}
+};
+
+class NameFormatItem : public LogFormatter::FormatItem{
+public:
+	NameFormatItem(const std::string& str = ""){}
+	void format(std::ostream& os, Loggor::ptr logger, LogLevel::Level level, LogEvent::ptr event) override{
+		os << logger->getName();
+	}
+};
+
+class ThreadFormatItem : public LogFormatter::FormatItem{
+public:
+	ThreadFormatItem(const std::string& str = ""){}
+	void format(std::ostream& os, Loggor::ptr loggor, LogLevel::Level level, LogEvent::ptr event) override{
+		os << event->getThreadId();
+	}
+};
+
+class FiberFormatItem : public LogFormatter::FormatItem{
+public:
+	FiberFormatItem(const std::string& str = ""){}
+	void format(std::ostream& os, Logger::ptr logger, LogLevel::Level level, LogEvent::ptr event)	override{
+		os << event->getFiberId();
+	}
+}
+
+class DateFormatItem : public LogFormatter::FormatItem{
+public:
+	DateFormatItem(const std::string& format = "%Y:%m:%d %H:%M:%s")
+		:m_format(format){	
+	}
+
+	void format(std::ostream& os, Logger::ptr logger, LogLevel::Level level, LogEvent::ptr event)	override{
+		os << event-getTime();
+	}
+private:
+	std::string m_format;	
+}
+
+class FilenameFormatItem : public LogFormatter::FormatItem{
+public:
+	FilenameFormatItem(const std::string& str = ""){}
+	void format(std::ostream& os, Logger::ptr logger, LogLevel::Level level, LogEvent::ptr event)	override{
+		os << event->getFile();
+	}
+}
+
+class LineFormatItem : public LogFormatter::FormatItem{
+public:
+	LineFormatItem(const std::string& str = ""){}
+	void format(std::ostream& os, Logger::ptr logger, LogLevel::Level level, LogEvent::ptr event)	override{
+		os << event->getFile();
+	}
+}
+
+class NewlineFormatItem : public LogFormatter::FormatItem{
+public:
+	NewlineFormatItem(const std::string& str = ""){}
+	void format(std::ostream& os, Logger::ptr logger, LogLevel::Level level, LogEvent::ptr event)	override{
+		os << std::endl;
+	}
+};
+
+
+class StringFormatItem : public LogFormatter::FormatItem{
+public:
+	StringFormatItem(const std::string& str = ""){}
+	void format(std::ostream& os, Logger::ptr logger, LogLevel::Level level, LogEvent::ptr event)	override{
+		os << m_string;
+	}
+private:
+	std::string m_string;
+}
 Logger::Logger(const std::string& name):m_name(name){
 
 	
@@ -113,3 +208,119 @@ void LogFormatter::init(){
 
 	
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	static std::map<std::string, std::function<FormatItem::ptr(const std::string& str)>> s_format_items = {
+#define XX(str, C) \
+		(#str, [](const std::string& fmt){ return FormatItem::ptr(new C(fmt));})
+		
+		XX(m, MessageFormatItem),
+		XX(p, LevelFormatItem),
+		XX(r, ElasxpseFormatItem),
+		XX(c, NameFormatItem),
+		XX(t, ThreadFormatItem),
+		XX(n, NewlineFormatItem),
+		XX(d, DateTimeFormatItem),
+		XX(l, LineFormatItem),
+#undef XX
+	};
+	
+	for(auto& i :vsc){
+		if(std::get<2>(i) == 0){
+			m_items.push_back(FormatItem::ptr(new StringFormatItem(std::get<0>(i))));	else{
+			auto it = s_format_items.find(std::get<0>(i));
+			if(it == s_format_items.end()){
+				m_items.push_back(FormatItem::ptr(new StringFormatItem("<<error_format %" + std::get<0>(i) + ">>")));
+			}else{
+				m_items.push_back(it->second(std::get<1>(i)));
+			}
+		}
+		
+	std::cout << std::get<0>(i) << " - " << std::get<1>(i) << " - " << std::get<2>(i) << std::endl;
+	}
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
