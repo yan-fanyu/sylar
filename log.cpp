@@ -110,6 +110,27 @@ public:
 };
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class StringFormatItem : public LogFormatter::FormatItem{
 public:
 	StringFormatItem(const std::string& str = ""){}
@@ -184,8 +205,33 @@ void StdoutLogAppender::log(LogLevel::Level level, LogEvent::ptr event){
 	}	
 }
 
-LogFormatter::LogFormatter(const std::string& pattern):m_pattern(pattern){
+void Logger::log(LogLevel::Level level, LogEvent::ptr event){
+	if(level >= m_level){
+		auto self = shared_from_this();
+		for(auto& i : m_appenders){
+			i->log(self, level, event);
+		}
+	}
+}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+LogFormatter::LogFormatter(const std::string& pattern):m_pattern(pattern){
+	init();
 }
 
 std::string LogFormatter::format(std::shared_ptr<Logger> loggor, LogEvent::ptr event){
@@ -201,12 +247,42 @@ void LogFormatter::init(){
 	std::string nstr;
 	for(size_t i = 0; i < m_pattern.size(); i++){
 		if(m_pattern[i] != '%'){
-			
+			nstr.append(1, m_pattern[i]);
+			continue;	
 		}
-	}
 
-
+		if((i + 1) < m_pattern.size()){
+			if(m_patternp[i+1] == '%'){
+				nstr.append(1, '%');
+				continue;
+			}
+		}
 	
+
+		size_t n = i+1;
+		int fmt_status = 0;
+		size_t fmt_begin= 0;
+
+		std::string str;
+		std::string fmt;
+		while(n < m_pattern.size()){
+			if(!isalpha(m_pattern[n] != '}'){
+				str = m_pattern.substr(i+1, n-i-1);
+				fmt_status = 1; 	//解析格式
+				fmt_begin++;
+				++n;
+				vontinue;
+			}	
+		}
+		if(fmt_status == 1){
+			if(m_pattern[n] == '}'){
+				fmt = m_pattern.substr(fmt_begin + 1, n - fmt_begin - 1);
+				fmt_status = 2;
+				break;
+			}
+		}
+		++n;		
+	}	
 }
 
 
