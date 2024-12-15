@@ -5,6 +5,7 @@
 #include<boost/lexical_cats.hpp>
 #include<string>
 #include<sylar/log.h>
+#include<yaml-cpp/yaml.h>
 
 namespace sylar{
 // 配置类的基类
@@ -14,6 +15,7 @@ public:
 	ConfigVarBase(const std::string& name, const std::string& description = "")
 		:m_name(name),
 		,m_description(description){
+			std::transform(m_name.begin(), m_name.end(), m_name.begin(), ::tolower);
 	}
 	// 基类的析构函数必须使用虚函数
 	virtual ~ConfigVarBase(){};
@@ -69,6 +71,7 @@ private:
 class Config{
 public:
 	typedef std::map<std::string, ConfigVarBase::ptr> ConfigVarMap;
+
 	template<class T>
 	static typename ConfigVar<T>::ptr Lookup(const std::string& name,
 		const T& default_val, const std::string& description = ""){
@@ -78,15 +81,17 @@ public:
 			return tmp;
 		}
 		
-		if(name.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ._0123456789"){
+		if(name.find_first_not_of("abcdefghijklmnopqrstuvwxyz._0123456789" != std::string::npos){
 			SYLAR_LOG_ERROR(SYLAR_LOG_ROOT()) << "Lookup name invalid" << name;
 			throw std::invalid_argument(name);	
 		}
+
 		typename ConfigVar<T>::ptr v(new ConfigVar<T>(name. default_val, description));
 		s_datas[name] = v;
 		return v;	
 	}
 	
+
 	template<class T>
 	static typename ConfigVar<T>::ptr Lookup(const std::string& name){
 		auto it = s_datas.find(name);
@@ -95,6 +100,10 @@ public:
 		}
 		return std::dynamic_pointer_cast<ConfigVar<T> >(it->second);
 	}
+
+	static void LoadFromYaml(const YAML::Node& root);
+	static ConfigVarBase LookupBase(const std::string& name);
+private:
 private:
 	static ConfigVarMap s_datas;
 
