@@ -9,6 +9,56 @@
 
 namespace sylar{
 
+
+class Semaphore{
+public:
+	Semaphore(uint32_t count = 0);
+	~Semaphore();
+
+	void wait();
+	void notify();
+
+// 禁用拷贝构造函数
+private:
+	Semaphore(const Semaphore&) = delete;
+	Semaphore(const Semaphore&) = delete;
+	Semaphore& operator=(const Semaphore&) = delete;
+
+private:
+	sem_t m_semaphore;
+};
+
+// RAII 用类的生命周期控制 锁 的关闭和开启
+template<class T>
+struct ScopedLockImpl{
+public:
+	ScopedLockImpl(T& mutex): m_mutex(mutex){
+		m_mutex.lock();
+		m_locked = true;
+	}
+	~ScopedLockImpl(){
+		unlock();
+	}
+
+	void lock(){
+		if(!m_locked){
+			m_mutex.lock();
+			m_locked = true;
+		}
+	}
+	
+	void unlock(){
+		if(m_locked){
+			m_mutex.unlock();
+			m_locked = false;
+		}
+	}
+private:
+	T& m_mutex;
+	bool m_locked;
+
+}
+
 class Thread{
 public:
 	typedef std::shared_ptr<Thread> ptr;
