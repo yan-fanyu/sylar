@@ -9,6 +9,7 @@ sylar::ConfigVar<float>::ptr g_float_value_config =
 	sylar::Config::Lookup("system.value", (float)10.2f, "system value");
 
 void print_yaml(const YAML::NIde& node, int level){	
+<<<<<<< HEAD
 	if(node.IsScalar()){
 		SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << std::string(level * 4, ' ')
 			<< node.Scalar() << " - " << node.Type() << " - " << level;
@@ -29,6 +30,8 @@ void print_yaml(const YAML::NIde& node, int level){
 			print_yaml(node[i], level + 1);
 		}
 	}
+=======
+>>>>>>> 532a61386e785b5b6c8332dceeaa96fa30f81d4b
 }
 
 void test_yaml(){
